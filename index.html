@@ -1024,19 +1024,20 @@ function syncTick(){
   const btn = document.querySelector('.sync-btn');
   btn.classList.add('syncing');
   btn.querySelector('span:last-child').textContent = 'Sincronizando…';
-  
-  fetch(APPS_SCRIPT_URL + '?action=sync')
-    .then(r => r.json())
-    .then(data => {
+
+  // Usamos no-cors porque Apps Script no permite headers CORS custom
+  // La sincronización igual se ejecuta en el servidor aunque no podamos leer la respuesta
+  fetch(APPS_SCRIPT_URL + '?action=sync', { mode: 'no-cors' })
+    .then(() => {
       btn.classList.remove('syncing');
       btn.querySelector('span:last-child').textContent = 'Sincronizar';
-      document.getElementById('last-sync').textContent = 'Última: ahora';
-      showToast('✓ Datos actualizados desde Tick', 'success');
+      document.getElementById('last-sync').textContent = 'Última: ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+      showToast('✓ Sincronización enviada a Tick — puede tardar 1-2 min', 'success');
     })
     .catch(() => {
       btn.classList.remove('syncing');
       btn.querySelector('span:last-child').textContent = 'Sincronizar';
-      showToast('Error al sincronizar', 'error');
+      showToast('Error al conectar con el servidor', 'error');
     });
 }
 
