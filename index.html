@@ -1018,16 +1018,26 @@ function resetConfig(){
 }
 
 // ── SYNC ───────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/intermediait.com/s/AKfycbwihY4nGSLfMPZhftXntXatoiMbcVfKoxoNDQJyQEAV1mOnmHL2pNG0pUhNI9whWSLWeA/exec';
+
 function syncTick(){
   const btn = document.querySelector('.sync-btn');
   btn.classList.add('syncing');
   btn.querySelector('span:last-child').textContent = 'Sincronizando…';
-  setTimeout(()=>{
-    btn.classList.remove('syncing');
-    btn.querySelector('span:last-child').textContent = 'Sincronizar';
-    document.getElementById('last-sync').textContent = 'Última: ahora';
-    showToast('✓ Datos actualizados desde Tick','success');
-  }, 2000);
+  
+  fetch(APPS_SCRIPT_URL + '?action=sync')
+    .then(r => r.json())
+    .then(data => {
+      btn.classList.remove('syncing');
+      btn.querySelector('span:last-child').textContent = 'Sincronizar';
+      document.getElementById('last-sync').textContent = 'Última: ahora';
+      showToast('✓ Datos actualizados desde Tick', 'success');
+    })
+    .catch(() => {
+      btn.classList.remove('syncing');
+      btn.querySelector('span:last-child').textContent = 'Sincronizar';
+      showToast('Error al sincronizar', 'error');
+    });
 }
 
 // ── TOAST ──────────────────────────────────────────────
