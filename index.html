@@ -404,11 +404,24 @@ async function apiFetch(action, params = {}) {
 
 async function apiGet(action, params = {}) {
   const qs = new URLSearchParams({ action, ...params }).toString();
+  const url = `${API}?${qs}`;
   try {
-    const r = await fetch(`${API}?${qs}`);
-    return await r.json();
+    // Intentar fetch directo primero
+    const r = await fetch(url, { redirect: 'follow' });
+    const text = await r.text();
+    return JSON.parse(text);
   } catch(e) {
-    return { ok: false, error: e.message };
+    // Fallback: fetch con no-cors no devuelve datos, usar XMLHttpRequest
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch(e) { resolve({ ok: false, error: 'Parse error' }); }
+      };
+      xhr.onerror = () => resolve({ ok: false, error: 'Network error' });
+      xhr.send();
+    });
   }
 }
 
